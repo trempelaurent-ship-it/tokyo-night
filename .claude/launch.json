@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "tokyo-night",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "-l", "3000", "L:\\Claude COde\\Tokyo Night"],
+      "port": 3000
+    }
+  ]
+}

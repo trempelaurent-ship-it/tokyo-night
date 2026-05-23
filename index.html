@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tokyo Night</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #000;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    }
+
+    #bg-video {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      min-width: 100%;
+      min-height: 100%;
+      width: auto;
+      height: auto;
+      object-fit: cover;
+      z-index: 0;
+    }
+
+    #overlay {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 24px 32px;
+      background: linear-gradient(transparent, rgba(0,0,0,0.6));
+    }
+
+    #track-name {
+      color: rgba(255, 255, 255, 0.85);
+      font-size: 13px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-weight: 300;
+    }
+
+    #controls {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .ctrl-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: rgba(255, 255, 255, 0.7);
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      transition: color 0.2s;
+    }
+
+    .ctrl-btn:hover { color: #fff; }
+
+    .ctrl-btn svg { width: 20px; height: 20px; fill: currentColor; }
+
+    #start-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      background: rgba(0, 0, 0, 0.35);
+    }
+
+    #start-screen svg {
+      width: 64px;
+      height: 64px;
+      fill: rgba(255,255,255,0.85);
+      transition: transform 0.2s, fill 0.2s;
+    }
+
+    #start-screen:hover svg {
+      transform: scale(1.1);
+      fill: #fff;
+    }
+  </style>
+</head>
+<body>
+
+  <video id="bg-video" autoplay muted loop playsinline>
+    <source src="Tokyo Night.mp4" type="video/mp4" />
+  </video>
+
+  <!-- Click to start (browser autoplay policy) -->
+  <div id="start-screen">
+    <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+  </div>
+
+  <!-- Minimal overlay -->
+  <div id="overlay" style="display:none;">
+    <span id="track-name">—</span>
+    <div id="controls">
+      <button class="ctrl-btn" id="btn-prev" title="Previous">
+        <svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>
+      </button>
+      <button class="ctrl-btn" id="btn-play" title="Play / Pause">
+        <svg id="icon-pause" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+        <svg id="icon-play" viewBox="0 0 24 24" style="display:none;"><path d="M8 5v14l11-7z"/></svg>
+      </button>
+      <button class="ctrl-btn" id="btn-next" title="Next">
+        <svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zm2-8.14 5.25 3.64L8 17.14V9.86zM16 6h2v12h-2z"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <audio id="player"></audio>
+
+  <script>
+    // --- Track list — put your .mp3 files in the /audio/ folder ---
+    const tracks = [
+      { title: "Ashen Loop",        file: "audio/Ashen Loop.mp3" },
+      { title: "Deep Pressure Drift", file: "audio/Deep Pressure Drift.mp3" },
+      { title: "Frostline Loop",    file: "audio/Frostline Loop.mp3" },
+      { title: "Icegrid Pulse",     file: "audio/Icegrid Pulse.mp3" },
+      { title: "Moon Through Glass", file: "audio/Moon Through Glass.mp3" },
+      { title: "Submerged Relay",   file: "audio/Submerged Relay.mp3" },
+      { title: "Velvet Drift Loop", file: "audio/Velvet Drift Loop.mp3" },
+    ];
+
+    let current = 0;
+    const player = document.getElementById('player');
+    const trackName = document.getElementById('track-name');
+    const overlay = document.getElementById('overlay');
+    const startScreen = document.getElementById('start-screen');
+    const iconPlay = document.getElementById('icon-play');
+    const iconPause = document.getElementById('icon-pause');
+
+    function loadTrack(index, autoplay = true) {
+      current = ((index % tracks.length) + tracks.length) % tracks.length;
+      player.src = tracks[current].file;
+      trackName.textContent = tracks[current].title;
+      if (autoplay) player.play();
+    }
+
+    function togglePlay() {
+      if (player.paused) {
+        player.play();
+      } else {
+        player.pause();
+      }
+    }
+
+    player.addEventListener('play', () => {
+      iconPlay.style.display = 'none';
+      iconPause.style.display = '';
+    });
+
+    player.addEventListener('pause', () => {
+      iconPlay.style.display = '';
+      iconPause.style.display = 'none';
+    });
+
+    player.addEventListener('ended', () => loadTrack(current + 1));
+
+    document.getElementById('btn-play').addEventListener('click', togglePlay);
+    document.getElementById('btn-next').addEventListener('click', () => loadTrack(current + 1));
+    document.getElementById('btn-prev').addEventListener('click', () => loadTrack(current - 1));
+
+    startScreen.addEventListener('click', () => {
+      startScreen.style.display = 'none';
+      overlay.style.display = 'flex';
+      loadTrack(0);
+    });
+
+    // MediaSession API — audio continues when screen locks
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.setActionHandler('nexttrack', () => loadTrack(current + 1));
+      navigator.mediaSession.setActionHandler('previoustrack', () => loadTrack(current - 1));
+      navigator.mediaSession.setActionHandler('play', () => player.play());
+      navigator.mediaSession.setActionHandler('pause', () => player.pause());
+    }
+  </script>
+
+</body>
+</html>
