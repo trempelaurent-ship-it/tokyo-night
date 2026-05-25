@@ -4,6 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Tokyo Night</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital@0;1&display=swap" rel="stylesheet" />
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -12,85 +15,284 @@
       overflow: hidden;
       width: 100vw;
       height: 100vh;
-      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     }
 
     #bg-video {
       position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      min-width: 100%;
-      min-height: 100%;
-      width: auto;
-      height: auto;
-      object-fit: cover;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      object-fit: contain;
       z-index: 0;
     }
 
+    @media (orientation: portrait) {
+      #bg-video { object-fit: contain; }
+    }
+
+    /* pill overlay — centré en bas */
     #overlay {
       position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
+      bottom: 36px;
+      left: 50%;
+      transform: translateX(-50%);
       z-index: 10;
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      padding: 24px 32px;
-      background: linear-gradient(transparent, rgba(0,0,0,0.6));
+      gap: 27px;
+      padding: 18px 42px;
+      background: rgba(10, 10, 15, 0.8);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.08);
+      white-space: nowrap;
     }
 
     #track-name {
-      color: rgba(255, 255, 255, 0.85);
-      font-size: 13px;
-      letter-spacing: 0.12em;
+      font-family: 'Space Mono', monospace;
+      font-size: 18px;
+      letter-spacing: 0.08em;
+      color: rgba(255, 255, 255, 0.9);
       text-transform: uppercase;
-      font-weight: 300;
     }
 
-    #controls {
+    /* séparateur vertical */
+    .sep {
+      width: 1px;
+      height: 24px;
+      background: rgba(255,255,255,0.2);
+      flex-shrink: 0;
+    }
+
+    /* volume */
+    #vol-wrap {
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: 12px;
     }
 
-    .ctrl-btn {
+    #vol-wrap svg {
+      width: 22px;
+      height: 22px;
+      fill: rgba(255,255,255,0.9);
+      flex-shrink: 0;
+    }
+
+    #vol-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 120px;
+      height: 4px;
+      border-radius: 2px;
+      background: rgba(255,255,255,0.55);
+      outline: none;
+      cursor: pointer;
+    }
+
+    #vol-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #fff;
+      cursor: pointer;
+      box-shadow: 0 0 4px rgba(255,255,255,0.6);
+    }
+
+    #vol-slider::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #fff;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 0 4px rgba(255,255,255,0.6);
+    }
+
+    #btn-play {
       background: none;
       border: none;
       cursor: pointer;
-      color: rgba(255, 255, 255, 0.7);
-      padding: 4px;
+      color: #89cff0;
+      padding: 0;
+      display: none;
+      align-items: center;
+      transition: color 0.2s;
+      flex-shrink: 0;
+    }
+    #btn-play:hover { color: #b8e0f7; }
+    #btn-play svg { width: 24px; height: 24px; fill: currentColor; }
+    #sep-play { display: none; }
+
+    @media (pointer: coarse) {
+      #btn-play { display: flex; }
+      #sep-play { display: block; }
+    }
+
+    #btn-next {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #89cff0;
+      padding: 0;
       display: flex;
       align-items: center;
       transition: color 0.2s;
+      flex-shrink: 0;
+    }
+    #btn-next:hover { color: #b8e0f7; }
+    #btn-next svg { width: 24px; height: 24px; fill: currentColor; }
+
+    #btn-kofi {
+      position: fixed;
+      bottom: 36px;
+      left: 32px;
+      z-index: 10;
+      background: rgba(10, 10, 15, 0.8);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 999px;
+      padding: 0 24px;
+      height: 57px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: rgba(255,255,255,0.7);
+      transition: color 0.2s, border-color 0.2s;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    #btn-kofi:hover { color: #ff5e5b; border-color: rgba(255,94,91,0.4); }
+    #btn-kofi svg { width: 21px; height: 21px; fill: #ff5e5b; flex-shrink: 0; }
+    #btn-kofi span {
+      font-family: 'Space Mono', monospace;
+      font-size: 16px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
     }
 
-    .ctrl-btn:hover { color: #fff; }
+    #btn-fullscreen {
+      position: fixed;
+      bottom: 36px;
+      right: 32px;
+      z-index: 10;
+      background: rgba(10, 10, 15, 0.8);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 50%;
+      width: 57px;
+      height: 57px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255,255,255,0.7);
+      transition: color 0.2s;
+    }
+    #btn-fullscreen:hover { color: #fff; }
+    #btn-fullscreen svg { width: 24px; height: 24px; fill: currentColor; }
 
-    .ctrl-btn svg { width: 20px; height: 20px; fill: currentColor; }
-
-    #start-screen {
+    #click-to-play {
       position: fixed;
       inset: 0;
-      z-index: 20;
+      z-index: 15;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      background: rgba(0, 0, 0, 0.35);
+      transition: opacity 0.8s ease;
     }
 
-    #start-screen svg {
-      width: 64px;
-      height: 64px;
-      fill: rgba(255,255,255,0.85);
-      transition: transform 0.2s, fill 0.2s;
+    #click-to-play span {
+      font-family: 'Space Mono', monospace;
+      font-size: 34px;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.45);
+      display: inline-block;
+      background: rgba(0, 0, 0, 0.8);
+      padding: 20px 40px;
+      border-radius: 16px;
+      transition: color 0.3s;
+      white-space: nowrap;
     }
 
-    #start-screen:hover svg {
-      transform: scale(1.1);
-      fill: #fff;
+    #click-to-play:hover span {
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    @media (max-width: 480px) {
+      #click-to-play span {
+        font-size: 18px;
+        letter-spacing: 0.25em;
+        padding: 16px 28px;
+      }
+    }
+
+    #click-to-play.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* ── Mobile ── */
+    @media (max-width: 600px) {
+      #overlay {
+        gap: 14px;
+        padding: 10px 20px;
+        bottom: 20px;
+      }
+      #track-name {
+        font-size: 11px;
+      }
+      .sep {
+        height: 14px;
+      }
+      #vol-wrap { gap: 8px; }
+      #vol-wrap svg { width: 15px; height: 15px; }
+      #vol-slider { width: 80px; height: 3px; }
+      #vol-slider::-webkit-slider-thumb { width: 13px; height: 13px; }
+      #vol-slider::-moz-range-thumb    { width: 13px; height: 13px; }
+      #btn-play svg  { width: 16px; height: 16px; }
+      #btn-next svg  { width: 16px; height: 16px; }
+
+      #btn-kofi {
+        bottom: auto;
+        top: 20px;
+        left: 16px;
+        height: 38px;
+        padding: 0 14px;
+        gap: 8px;
+      }
+      #btn-kofi svg  { width: 14px; height: 14px; }
+      #btn-kofi span { font-size: 11px; }
+
+      #btn-fullscreen {
+        bottom: 20px;
+        right: 16px;
+        width: 38px;
+        height: 38px;
+      }
+      #btn-fullscreen svg { width: 16px; height: 16px; }
+    }
+
+    /* ── Mobile paysage (hauteur faible) ── */
+    @media (orientation: landscape) and (max-height: 500px) {
+      #btn-kofi {
+        bottom: auto;
+        top: 16px;
+        left: 16px;
+        height: 38px;
+        padding: 0 14px;
+        gap: 8px;
+      }
+      #btn-kofi svg  { width: 14px; height: 14px; }
+      #btn-kofi span { font-size: 11px; }
     }
   </style>
 </head>
@@ -100,93 +302,161 @@
     <source src="Tokyo Night.mp4" type="video/mp4" />
   </video>
 
-  <!-- Click to start (browser autoplay policy) -->
-  <div id="start-screen">
-    <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+  <a id="btn-kofi" href="https://ko-fi.com/m4hoka" target="_blank" title="Support on Ko-fi">
+    <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+    <span>buy me a coffee</span>
+  </a>
+
+  <button id="btn-fullscreen" title="Fullscreen">
+    <svg id="icon-expand" viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+    <svg id="icon-compress" viewBox="0 0 24 24" style="display:none"><path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/></svg>
+  </button>
+
+  <div id="click-to-play">
+    <span>click to play</span>
   </div>
 
-  <!-- Minimal overlay -->
-  <div id="overlay" style="display:none;">
+  <div id="overlay">
+    <button id="btn-play">
+      <svg id="icon-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+      <svg id="icon-pause" viewBox="0 0 24 24" style="display:none"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+    </button>
+    <div class="sep" id="sep-play"></div>
     <span id="track-name">—</span>
-    <div id="controls">
-      <button class="ctrl-btn" id="btn-prev" title="Previous">
-        <svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>
-      </button>
-      <button class="ctrl-btn" id="btn-play" title="Play / Pause">
-        <svg id="icon-pause" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
-        <svg id="icon-play" viewBox="0 0 24 24" style="display:none;"><path d="M8 5v14l11-7z"/></svg>
-      </button>
-      <button class="ctrl-btn" id="btn-next" title="Next">
-        <svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zm2-8.14 5.25 3.64L8 17.14V9.86zM16 6h2v12h-2z"/></svg>
-      </button>
+    <div class="sep"></div>
+    <button id="btn-next" title="Next track">
+      <svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zm2-8.14L11.03 12 8 14.14V9.86zM16 6h2v12h-2z"/></svg>
+    </button>
+    <div class="sep"></div>
+    <div id="vol-wrap">
+      <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
+      <input type="range" id="vol-slider" min="0" max="1" step="0.01" value="0.8" />
     </div>
   </div>
 
   <audio id="player"></audio>
 
+  <script defer src="/_vercel/insights/script.js"></script>
   <script>
-    // --- Track list — put your .mp3 files in the /audio/ folder ---
     const tracks = [
-      { title: "Ashen Loop",        file: "audio/Ashen Loop.mp3" },
-      { title: "Deep Pressure Drift", file: "audio/Deep Pressure Drift.mp3" },
-      { title: "Frostline Loop",    file: "audio/Frostline Loop.mp3" },
-      { title: "Icegrid Pulse",     file: "audio/Icegrid Pulse.mp3" },
-      { title: "Moon Through Glass", file: "audio/Moon Through Glass.mp3" },
-      { title: "Submerged Relay",   file: "audio/Submerged Relay.mp3" },
-      { title: "Velvet Drift Loop", file: "audio/Velvet Drift Loop.mp3" },
-      { title: "Orbital Uplift",   file: "audio/Orbital Uplift.mp3" },
+      { title: "Adachi",    file: "audio/Adachi.mp3" },
+      { title: "Arakawa",   file: "audio/Arakawa.mp3" },
+      { title: "Bunkyo",    file: "audio/Bunkyo.mp3" },
+      { title: "Chiyoda",   file: "audio/Chiyoda.mp3" },
+      { title: "Chuo",      file: "audio/Chuo.mp3" },
+      { title: "Edogawa",   file: "audio/Edogawa.mp3" },
+      { title: "Itabashi",  file: "audio/Itabashi.mp3" },
+      { title: "Katsushika", file: "audio/Katsushika.mp3" },
+      { title: "Kita",      file: "audio/Kita.mp3" },
+      { title: "Koto",      file: "audio/Koto.mp3" },
+      { title: "Meguro",    file: "audio/Meguro.mp3" },
+      { title: "Minato",    file: "audio/Minato.mp3" },
+      { title: "Shinjuku",  file: "audio/Shinjuku.mp3" },
     ];
 
     let current = 0;
-    const player = document.getElementById('player');
+    const player    = document.getElementById('player');
     const trackName = document.getElementById('track-name');
-    const overlay = document.getElementById('overlay');
-    const startScreen = document.getElementById('start-screen');
-    const iconPlay = document.getElementById('icon-play');
+    const volSlider = document.getElementById('vol-slider');
+    const btnPlay   = document.getElementById('btn-play');
+    const iconPlay  = document.getElementById('icon-play');
     const iconPause = document.getElementById('icon-pause');
+
+    player.volume = parseFloat(volSlider.value);
+    volSlider.addEventListener('input', () => { player.volume = parseFloat(volSlider.value); });
+
+    function setIcon(playing) {
+      iconPlay.style.display  = playing ? 'none' : '';
+      iconPause.style.display = playing ? '' : 'none';
+    }
 
     function loadTrack(index, autoplay = true) {
       current = ((index % tracks.length) + tracks.length) % tracks.length;
       player.src = tracks[current].file;
       trackName.textContent = tracks[current].title;
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: tracks[current].title,
+          artist: 'Tokyo Night',
+        });
+      }
       if (autoplay) player.play();
     }
 
-    function togglePlay() {
+    player.addEventListener('play',  () => setIcon(true));
+    player.addEventListener('pause', () => setIcon(false));
+    player.addEventListener('ended', () => loadTrack(current + 1));
+
+    document.getElementById('btn-next').addEventListener('click', () => loadTrack(current + 1));
+
+    btnPlay.addEventListener('click', () => {
       if (player.paused) {
-        player.play();
+        if (!player.src) loadTrack(0);
+        else player.play();
       } else {
         player.pause();
       }
+    });
+
+    const ctp = document.getElementById('click-to-play');
+
+    function hidePrompt() {
+      ctp.classList.add('hidden');
     }
 
-    player.addEventListener('play', () => {
-      iconPlay.style.display = 'none';
-      iconPause.style.display = '';
+    ctp.addEventListener('click', () => {
+      player.play();
+      hidePrompt();
     });
 
-    player.addEventListener('pause', () => {
-      iconPlay.style.display = '';
-      iconPause.style.display = 'none';
+    loadTrack(0, false);
+    player.play().then(hidePrompt).catch(() => {});
+
+    const btnFs       = document.getElementById('btn-fullscreen');
+    const iconExpand   = document.getElementById('icon-expand');
+    const iconCompress = document.getElementById('icon-compress');
+
+    const bgVideo = document.getElementById('bg-video');
+
+    function isFullscreen() {
+      return !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+    }
+
+    function enterFullscreen() {
+      const el = document.documentElement;
+      if (el.requestFullscreen)                  el.requestFullscreen();
+      else if (el.webkitRequestFullscreen)       el.webkitRequestFullscreen();
+      else if (el.mozRequestFullScreen)          el.mozRequestFullScreen();
+      else if (el.msRequestFullscreen)           el.msRequestFullscreen();
+      else if (bgVideo.webkitEnterFullscreen)    bgVideo.webkitEnterFullscreen(); // iOS Safari fallback
+    }
+
+    function exitFullscreen() {
+      if (document.exitFullscreen)               document.exitFullscreen();
+      else if (document.webkitExitFullscreen)    document.webkitExitFullscreen();
+      else if (document.mozCancelFullScreen)     document.mozCancelFullScreen();
+      else if (document.msExitFullscreen)        document.msExitFullscreen();
+      else if (bgVideo.webkitExitFullscreen)     bgVideo.webkitExitFullscreen();
+    }
+
+    btnFs.addEventListener('click', () => {
+      isFullscreen() ? exitFullscreen() : enterFullscreen();
     });
 
-    player.addEventListener('ended', () => loadTrack(current + 1));
+    function updateFsIcon() {
+      const fs = isFullscreen();
+      iconExpand.style.display   = fs ? 'none' : '';
+      iconCompress.style.display = fs ? '' : 'none';
+    }
+    document.addEventListener('fullscreenchange',       updateFsIcon);
+    document.addEventListener('webkitfullscreenchange', updateFsIcon);
+    document.addEventListener('mozfullscreenchange',    updateFsIcon);
+    document.addEventListener('MSFullscreenChange',     updateFsIcon);
 
-    document.getElementById('btn-play').addEventListener('click', togglePlay);
-    document.getElementById('btn-next').addEventListener('click', () => loadTrack(current + 1));
-    document.getElementById('btn-prev').addEventListener('click', () => loadTrack(current - 1));
-
-    startScreen.addEventListener('click', () => {
-      startScreen.style.display = 'none';
-      overlay.style.display = 'flex';
-      loadTrack(0);
-    });
-
-    // MediaSession API — audio continues when screen locks
     if ('mediaSession' in navigator) {
-      navigator.mediaSession.setActionHandler('nexttrack', () => loadTrack(current + 1));
+      navigator.mediaSession.setActionHandler('nexttrack',     () => loadTrack(current + 1));
       navigator.mediaSession.setActionHandler('previoustrack', () => loadTrack(current - 1));
-      navigator.mediaSession.setActionHandler('play', () => player.play());
+      navigator.mediaSession.setActionHandler('play',  () => player.play());
       navigator.mediaSession.setActionHandler('pause', () => player.pause());
     }
   </script>
